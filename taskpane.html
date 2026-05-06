@@ -179,8 +179,9 @@
     function doClearHighlight() {
         statusEl.textContent = '正在清除高亮...';
         Word.run(function(context) {
-            var bodyRange = context.document.body.getRange(Word.RangeLocation.whole);
-            bodyRange.font.highlightColor = 'none';
+            var body = context.document.body;
+            var range = body.getRange();
+            range.font.highlightColor = null;
             return context.sync().then(function() {
                 statusEl.textContent = '已清除所有高亮';
             });
