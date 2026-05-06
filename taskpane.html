@@ -11,6 +11,11 @@
     <p><b>待替换原词</b>（每行一个，点击下方标签可查找定位）</p>
     <textarea id="sourceWords" rows="6" style="width:100%;" placeholder="例如：我觉得&#10;核心指标"></textarea>
     <div id="wordTags" style="margin-top:6px;"></div>
+    <div id="navBtns" style="margin-top:6px;display:none;">
+        <button id="prevBtn">▲ 上一个</button>
+        <button id="nextBtn">▼ 下一个</button>
+        <span id="navInfo" style="font-size:12px;color:#666;margin-left:6px;"></span>
+    </div>
 
     <p><b>目标替换词</b>（对应行）</p>
     <textarea id="targetWords" rows="6" style="width:100%;" placeholder="例如：本人认为&#10;KPI"></textarea>
@@ -36,6 +41,8 @@
         #replaceBtn { background: #2b579a; color: white; }
         #clearBtn { background: white; color: #d32f2f; border: 1px solid #d32f2f; }
         #clearHLBtn { background: white; color: #e65100; border: 1px solid #e65100; }
+        #prevBtn, #nextBtn { padding: 4px 12px; margin-right: 4px; cursor: pointer; border-radius: 4px; border: 1px solid #2b579a; background: white; color: #2b579a; font-size: 12px; }
+        #prevBtn:hover, #nextBtn:hover { background: #2b579a; color: white; }
         textarea { font-family: Consolas, monospace; font-size: 13px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .word-tag { display: inline-block; padding: 3px 10px; margin: 3px 4px 3px 0; border-radius: 12px; font-size: 12px; cursor: pointer; border: 1px solid #b0c4de; color: #fff; }
         .word-tag:hover { opacity: 0.8; }
@@ -46,6 +53,14 @@
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script>
     var srcEl, tgtEl, statusEl, resultArea, resultContent, wordTagsEl;
+
+    // 导航状态：记录当前选中的关键词和匹配位置
+    var navState = {
+        word: '',       // 当前关键词
+        colorIndex: 0,  // 当前颜色索引
+        currentPos: 0,  // 当前匹配位置（0-based）
+        totalCount: 0   // 总匹配数
+    };
 
     // 不同关键词使用不同高亮颜色（Word 支持的 highlightColor 值）
     var HIGHLIGHT_COLORS = [
@@ -82,6 +97,8 @@
         document.getElementById('replaceBtn').onclick = doReplace;
         document.getElementById('clearHLBtn').onclick = doClearHighlight;
         document.getElementById('clearBtn').onclick = doClear;
+        document.getElementById('prevBtn').onclick = doNavigatePrev;
+        document.getElementById('nextBtn').onclick = doNavigateNext;
 
         // 自动保存 + 刷新标签
         var saveTimer;
@@ -162,9 +179,18 @@
                     // 选中第一个匹配项，定位到该位置
                     results.items[0].select();
                     return context.sync().then(function() {
-                        statusEl.textContent = '"' + word + '" 找到 ' + count + ' 处，已定位到第一处';
+                        // 更新导航状态
+                        navState.word = word;
+                        navState.colorIndex = colorIndex;
+                        navState.currentPos = 0;
+                        navState.totalCount = count;
+                        updateNavUI();
+                        statusEl.textContent = '"' + word + '" 找到 ' + count + ' 处，已定位到第 1 处';
                     });
                 } else {
+                    navState.word = '';
+                    navState.totalCount = 0;
+                    updateNavUI();
                     statusEl.textContent = '"' + word + '" 未找到';
                     if (tagEl) tagEl.className = 'word-tag';
                 }
@@ -172,6 +198,58 @@
         }).catch(function(error) {
             statusEl.textContent = '查找失败: ' + error.message;
             if (tagEl) tagEl.className = 'word-tag';
+        });
+    }
+
+    // 更新导航按钮显示
+    function updateNavUI() {
+        var navBtns = document.getElementById('navBtns');
+        var navInfo = document.getElementById('navInfo');
+        if (navState.totalCount > 0) {
+            navBtns.style.display = 'block';
+            navInfo.textContent = (navState.currentPos + 1) + ' / ' + navState.totalCount;
+        } else {
+            navBtns.style.display = 'none';
+            navInfo.textContent = '';
+        }
+    }
+
+    // 上一个
+    function doNavigatePrev() {
+        if (navState.totalCount === 0) return;
+        navState.currentPos--;
+        if (navState.currentPos < 0) navState.currentPos = navState.totalCount - 1;
+        navigateToPos();
+    }
+
+    // 下一个
+    function doNavigateNext() {
+        if (navState.totalCount === 0) return;
+        navState.currentPos++;
+        if (navState.currentPos >= navState.totalCount) navState.currentPos = 0;
+        navigateToPos();
+    }
+
+    // 跳转到当前导航位置
+    function navigateToPos() {
+        var word = navState.word;
+        var hlColor = getColor(navState.colorIndex);
+        var pos = navState.currentPos;
+
+        Word.run(function(context) {
+            var results = context.document.body.search(word, { matchCase: false, matchWholeWord: false });
+            results.load('items');
+            return context.sync().then(function() {
+                if (results.items.length > pos) {
+                    results.items[pos].select();
+                    return context.sync().then(function() {
+                        updateNavUI();
+                        statusEl.textContent = '"' + word + '" ' + (pos + 1) + '/' + navState.totalCount;
+                    });
+                }
+            });
+        }).catch(function(error) {
+            statusEl.textContent = '导航失败: ' + error.message;
         });
     }
 
