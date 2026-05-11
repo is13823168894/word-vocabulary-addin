@@ -11,7 +11,7 @@
   <Description DefaultValue="词汇统计与替换工具"/>
   <IconUrl DefaultValue="https://is13823168894.github.io/word-addin/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://is13823168894.github.io/word-addin/icon-64.png"/>
-  <SupportUrl DefaultValue="https://github.com/is13823168894/word-vocabulary-addin"/>
+  <SupportUrl DefaultValue="https://github.com/is13823168894/word-addin"/>
   <AppDomains>
     <AppDomain>https://is13823168894.github.io</AppDomain>
   </AppDomains>
