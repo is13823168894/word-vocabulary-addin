@@ -9,15 +9,15 @@
   <DefaultLocale>zh-CN</DefaultLocale>
   <DisplayName DefaultValue="词汇增强助手"/>
   <Description DefaultValue="词汇统计与替换工具"/>
-  <SupportUrl DefaultValue="https://github.com/is13823168894/word-addin"/>
+  <SupportUrl DefaultValue="http://localhost/word-addin"/>
   <AppDomains>
-    <AppDomain>https://is13823168894.github.io</AppDomain>
+    <AppDomain>http://localhost</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://is13823168894.github.io/word-addin/taskpane.html"/>
+    <SourceLocation DefaultValue="http://localhost/word-addin/taskpane.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -53,7 +53,7 @@
     <Resources>
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="http://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://is13823168894.github.io/word-addin/taskpane.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="http://localhost/word-addin/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="词汇增强助手"/>
